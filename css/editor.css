@@ -36,6 +36,7 @@
 
 .screen {
 	position: absolute;
+	transform-origin: top left;
 }
 .screen canvas {
 	 pointer-events:none;

@@ -158,18 +158,24 @@ angular.module('openspire-editor').controller('AccordionPanelsCtrl', function ($
 
 angular.module('openspire-editor').controller('DeviceSelectorButtonsCtrl', function ($scope)
 {
-    $scope.radioModel = 'Handheld';
+    $scope.radioModel = 'iPad';
     $scope.toggleMode = function() {
         if ($scope.radioModel == 'Handheld') {
-            // TODO: stuff
+            setEditorSize(320, 240, 1.5);
+            repositionWidgets();	
+			drawElementsBoundaries();
             console.log('Handheld clicked');
         }
         else if ($scope.radioModel == 'iPad') {
-            // TODO: stuff
+            setEditorSize(640, 480);
+            repositionWidgets();
+            drawElementsBoundaries();
             console.log('iPad clicked');
         }
         else if ($scope.radioModel == 'Computer') {
-            // TODO: stuff
+            setEditorSize(1024, 1024);
+            repositionWidgets();
+            drawElementsBoundaries();
             console.log('Computer clicked');
         }
     }

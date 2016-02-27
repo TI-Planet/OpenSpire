@@ -13,9 +13,44 @@ var widget_callback = function(){};
 var c = document.getElementById("canvas");
 var ctx = c.getContext("2d");
 
+var pixel_scale = 1;
+
 var container = document.getElementById('container');
 container.setAttribute('data-x', 0);
 container.setAttribute('data-y', 0);
+
+var screen = document.getElementById('screen');
+
+
+
+
+
+
+function setEditorSize(w,h,scale) {
+	scale = scale || 1;
+	$container = $(container);
+	$canvas = $(c);
+	$screen = $(screen);
+	
+	$container.height(h);
+	$container.width(w);
+	
+	canvas.height = h;
+	canvas.width = w;
+	
+	var ws = 0;//w - w/scale;
+	var hs = 0;//h - h/scale;
+	
+	$screen.css({
+	  '-webkit-transform' : 'scale(' + scale + ')',
+	  '-moz-transform'    : 'scale(' + scale + ')',
+	  '-ms-transform'     : 'scale(' + scale + ')',
+	  '-o-transform'      : 'scale(' + scale + ')',
+	  'transform'         : 'scale(' + scale + ')'
+	});
+	
+	pixel_scale = scale;
+}
 
 var rootWidget = {
 	el: container,
@@ -60,16 +95,6 @@ function duplicate(el) {
 	el.parentNode.appendChild(clone);
 	el.onmousedown="";
 }
-
-//var w_btn1 = addWidget(btn1, 100, 100, rootWidget);
-//var w_btn2 = addWidget(btn2, 200, 100, rootWidget);
-//var w_inp1 = addWidget(inp1, 300, 100, rootWidget);
-/*
-addAlignment(w_btn1, w_btn2, 'left');
-addAlignment(w_btn2, w_inp1, 'left');
-addAlignment(w_btn2, w_inp1, 'bottom');*/
-
-
 
 function addWidget(el, x, y, parent) {
 	var container = document.getElementById('container');
@@ -141,7 +166,7 @@ function updateWidgetAlignment(source, target, dx, dy) {
 
 	for (var i = 0; i < alignments.length; i++) {
 		var alignment = alignments[i];
-		if (alignment.target == target) {
+		if (alignment && alignment.target == target) {
 			var side = alignment.side;
 			if (side == 'left' || side == 'right')
 				moveWidget(source, dx, 0);
@@ -190,6 +215,108 @@ function setPositionValue(widget, x, y) {
 		vert.value -= position.bottom ? pb.h - rel.y : rel.y
 }
 
+
+function repositionWidgets() {
+	 var i;
+	 var toPositionHorz = [];
+	 var positionedHorz = {};
+	 
+	 var toPositionVert = [];
+	 var positionedVert = {};
+	 
+	 for (i=0; i<widgets.length; i++) {
+		var widget = widgets[i];
+		widget.moveTo = {};
+		toPositionHorz[i] = widget;
+		toPositionVert[i] = widget;
+	 }
+	 
+	 i = 0;
+	 while (toPositionHorz.length > 0) {
+		var widget = toPositionHorz[i];
+		var bp = getElementBoundaries(widget.parent.el);
+		var b = getElementBoundaries(widget.el);
+		var hal = widget.alignments[0]; // 0 is horz index
+		var pos = widget.position;
+		var canMove = !hal;
+		
+		var alLeft = 0;
+		var alRight = bp.w;
+		
+		if (hal && positionedHorz[hal.target.id]) {
+			var al = getAlignment(hal);
+			alLeft = alRight = al.x;
+			canMove = true;
+		} 
+		
+		if (canMove) {
+			console.log('moving ', widget.name);
+			var left = widget.position.left;
+			var right = widget.position.right;
+			var isPx = (left ? left.unit : right.unit) != '%';
+			var val = (left ? left.value : right.value) * (isPx ? 1 : bp.w / 100);
+			
+			widget.moveTo.x = left ? alLeft + val : alRight - val - b.w;
+			positionedHorz[widget.id] = true;
+			toPositionHorz.splice(i, 1);
+		}
+		 
+		i++;
+		
+		if (i >= toPositionHorz.length)
+			i = 0;
+     }
+     
+     
+	 i = 0;
+	 while (toPositionVert.length > 0) {
+		var widget = toPositionVert[i];
+		var bp = getElementBoundaries(widget.parent.el);
+		var b = getElementBoundaries(widget.el);
+		var hal = widget.alignments[1]; // 1 is vert index
+		var pos = widget.position;
+		var canMove = !hal;
+		
+		var alTop = 0;
+		var alBottom = bp.h;
+		
+		if (hal && positionedVert[hal.target.id]) {
+			var al = getAlignment(hal);
+			alTop = alBottom = al.y;
+			canMove = true;
+		} 
+		
+		if (canMove) {
+			console.log('moving ', widget.name);
+			var top = widget.position.top;
+			var bottom = widget.position.bottom;
+			var isPx = (top ? top.unit : bottom.unit) != '%';
+			var val = (top ? top.value : bottom.value) * (isPx ? 1 : bp.h / 100);
+			
+			widget.moveTo.y = top ? alTop + val: alBottom - val - b.h;
+			positionedVert[widget.id] = true;
+			toPositionVert.splice(i, 1);
+		}
+		 
+		i++;
+		
+		if (i >= toPositionVert.length)
+			i = 0;
+     }
+     
+	 for (i=0; i<widgets.length; i++) {
+		var widget = widgets[i];
+		var x = widget.moveTo.x;
+		var y = widget.moveTo.y;
+		var el = widget.el;
+		
+		el.style.webkitTransform =
+			el.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+		el.setAttribute('data-x', x);
+		el.setAttribute('data-y', y);
+	 }
+}
+
 function getSideIndex(side) {
 	return (side == "left" || side == "right") ? 0 : 1;
 }
@@ -207,10 +334,13 @@ function addAlignment(source, target, side) {
 			side: side
 		};
 
-		if (dependencies[t_widget.id] && dependencies[t_widget.id].indexOf(s_widget) == -1)
-			dependencies[t_widget.id].push(s_widget);
-		else
+		if (dependencies[t_widget.id])
+			if (dependencies[t_widget.id].indexOf(s_widget) == -1)
+				dependencies[t_widget.id].push(s_widget);
+		else {
 			dependencies[t_widget.id] = [s_widget];
+			console.log('replaceing dep');
+		}
 	}
 }
 
@@ -406,8 +536,10 @@ function drawWidgetBoundaries(widget, w, h) {
 }
 
 function drawElementsBoundaries() {
-	var width = c.width;
-	var height = c.height;
+	var b = getElementBoundaries(container);
+	
+	var width = b.w;//c.width;
+	var height = b.h;//c.height;
 
 	ctx.clearRect(0, 0, width, height);
 
@@ -497,11 +629,12 @@ interact(container).dropzone({
 function dragMoveListener(event) {
 	var target = event.target;
 	
+	
 	if (!target.widget)
 		addTemplate(target);
 	
 	var widget = target.widget;	
-	moveWidget(widget, event.dx, event.dy);
+	moveWidget(widget, event.dx / pixel_scale, event.dy / pixel_scale);
 
 	drawElementsBoundaries();
 }
