@@ -334,9 +334,11 @@ function addAlignment(source, target, side) {
 			side: side
 		};
 
-		if (dependencies[t_widget.id])
-			if (dependencies[t_widget.id].indexOf(s_widget) == -1)
+		if (dependencies[t_widget.id]) {
+			if (dependencies[t_widget.id].indexOf(s_widget) == -1) {
 				dependencies[t_widget.id].push(s_widget);
+			}
+		}
 		else {
 			dependencies[t_widget.id] = [s_widget];
 			console.log('replaceing dep');
