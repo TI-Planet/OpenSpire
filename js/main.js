@@ -65,8 +65,51 @@ angular.module('openspire-editor').controller('navbarctrl', function ($scope) {
 	
 	$scope.getLua = function() {
 		console.log(widgets);
+
+		var widgetNames = "";
+		for (var i=0; i<widgets.length; i++) {
+			widgetNames += widgets[i].name;
+			if (i<widgets[i].alignments.length-1) {
+				widgetNames += ",";
+			}
+		}
+
+		var lua = "do								\n \
+		local Input = etk.Widgets.Input				\n \
+		local Label = etk.Widgets.Label				\n \
+		local Button = etk.Widgets.Button			\n \
+													\n \
+		local myView = etk.View()					\n \
+													\n \
+		local " + widgetNames + "\n\n";
+
+
+		for (var i=0; i<widgets.length; i++) {
+			var alignments = "";
+			for (var j=0; j<widgets[i].alignments.length; j++) {
+				alignments += "{" + "ref="+widgets[i].alignments[j].target.name + ", side=Position.Sides."+widgets[i].alignments[j].side + "}";
+				if (j<widgets[i].alignments.length-1) {
+					alignments += ",";
+				}
+			}
+			var positions = (widgets[i].position.top ? ("top='"+widgets[i].position.top.value+(widgets[i].position.top.unit ? widgets[i].position.top.unit : "")+"', ") : "")
+						  + (widgets[i].position.bottom ? ("bottom ='"+widgets[i].position.bottom.value+(widgets[i].position.bottom.unit ? widgets[i].position.bottom.unit : "")+"', ") : "")
+						  + (widgets[i].position.right ? ("right ='"+widgets[i].position.right.value+(widgets[i].position.right.unit ? widgets[i].position.right.unit : "")+"', ") : "")
+						  + (widgets[i].position.left ? ("left ='"+widgets[i].position.left.value+(widgets[i].position.left.unit ? widgets[i].position.left.unit : "")+"'") : "")
+						  + ", alignment={ " + alignments + " }";
+			lua += "local " + (widgets[i].name + " = " + widgets[i].type.capitalizeFirstLetter() + " { " + "\n" + "\t" + "position = Position { " + positions + " } " + "\n" + "}");
+			if (i<widgets.length-1) {
+				lua += ",";
+			}
+			lua += "\n\n";
+		}
+
+		lua += "\n end";
+
+		lua += "\n myView:addChildren("+widgetNames+")";
+
+		console.log(lua);
 	}
-	
 });
 
 
