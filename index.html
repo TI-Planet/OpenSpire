@@ -1,0 +1,302 @@
+<!doctype html>
+<html ng-app="openspire-editor">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>OpenSpire - TI-Nspire Lua visual GUI Editor</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/editor.css">
+
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/interact/dist/interact.js"></script>
+
+    <script src="https://code.angularjs.org/1.4.9/angular.min.js"></script>
+    <script src="https://code.angularjs.org/1.4.9/angular-animate.min.js"></script>
+    <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.1.0.js"></script>
+
+    <script id="uib/template/accordion/accordion-group.html" type="text/ng-template">
+        <div class="panel" ng-class="panelClass || 'panel-default'">
+            <div class="panel-heading" ng-keypress="toggleOpen($event)">
+                <h4 class="panel-title">
+                    <a href tabindex="0" class="accordion-toggle" ng-click="toggleOpen()" uib-accordion-transclude="heading">
+                        <span ng-class="{'text-muted': isDisabled}">{{heading}}</span><i class="pull-right glyphicon"
+                                                                                         ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}"></i>
+                    </a>
+                </h4>
+            </div>
+            <div class="panel-collapse collapse" uib-collapse="!isOpen">
+                <div class="panel-body" ng-transclude></div>
+            </div>
+        </div>
+    </script>
+
+    <script id="etk-widget-button" type="text/ng-template">
+        <button type="button" class="btn btn-default btn-sm">{{name}} <span class="glyphicon glyphicon-move"></span></button>
+    </script>
+</head>
+
+<body ng-cloak>
+<!--[if lt IE 8]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
+
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="navbarctrl">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">OpenSpire - TI-Nspire Lua visual GUI Editor</a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#"><span class="glyphicon glyphicon-open-file" aria-hidden="true"></span> Open</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a></li>
+            <li><a href="#" ng-click="getLua()"><span class="glyphicon glyphicon-align-left" aria-hidden="true"></span> Get .lua</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Get .tns</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Settings</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div id="columnTitles" class="row">
+        <div class="col-md-2 no-float">
+            <h4>GUI Elements</h4>
+        </div>
+
+        <div class="middleColBordered col-md-8 text-center no-float">
+            <h4>Preview / Editor</h4>
+
+            <div id="deviceSelector" ng-controller="DeviceSelectorButtonsCtrl">
+                <div class="btn-group" role="group">
+                    <label class="btn btn-primary btn-sm" ng-model="radioModel" ng-change="toggleMode()" uib-btn-radio="'Handheld'"><span class="glyphicon glyphicon-education"></span> Handheld</label>
+                    <label class="btn btn-primary btn-sm" ng-model="radioModel" ng-change="toggleMode()" uib-btn-radio="'iPad'"><span class="glyphicon glyphicon-sound-stereo"></span> iPad</label>
+                    <label class="btn btn-primary btn-sm" ng-model="radioModel" ng-change="toggleMode()" uib-btn-radio="'Computer'"><span class="glyphicon glyphicon-fullscreen"></span>
+                        Computer</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 no-float">
+            <h4>Element Properties</h4>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div id="guiElements" class="col-md-2 no-float">
+            <div class="sidebarsInnerScroll" ng-controller="AccordionPanelsCtrl">
+                <uib-accordion close-others="false">
+                    <uib-accordion-group heading="Containers" is-open="true">
+                        <ul class="list-inline">
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Screen <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Window <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                        </ul>
+                    </uib-accordion-group>
+                    <uib-accordion-group heading="Simple widgets" is-open="true">
+                        <ul class="list-inline">
+							<li>
+								<input type="text" data-name="inp" data-type="input" value="text input" class="elem pre-elem" onmousedown="duplicate(this);" onclick="selectWidget(this)">
+							</li>
+							<li>
+								<input type="number" data-name="ninp" data-type="input-number" value="numeric input" class="elem pre-elem" onmousedown="duplicate(this);" onclick="selectWidget(this)">
+							</li>
+							<li>
+								<input type="button" data-name="btn" data-type="button" value="button" class="elem pre-elem" onmousedown="duplicate(this);" onclick="selectWidget(this)">
+							</li>
+                            <li>
+								<span class="elem pre-elem" data-type="label" onmousedown="duplicate(this);">Label</span>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Slider <span class="glyphicon glyphicon-move"></span></button>
+                            </li> 
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">On/Off switch <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Mathbox <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                        </ul>
+                    </uib-accordion-group>
+                    <uib-accordion-group heading="Advanced widgets" is-open="true">
+                        <ul class="list-inline">
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Checkboxes <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Radio buttons <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Dropdown menu <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Table <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">List <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">2D graph <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-default btn-sm">Pie chart <span class="glyphicon glyphicon-move"></span></button>
+                            </li>
+                        </ul>
+                    </uib-accordion-group>
+                </uib-accordion>
+                <div id="guiElementsSearch">
+                    <div class="input-group custom-search-form">
+                        <input type="text" class="form-control" placeholder="Search...">
+                                <span class="input-group-btn">
+                                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                            </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="guiPreview" class="middleColBordered col-md-8 text-center no-float">
+            <div class="">
+				<div class="screen">
+					<div class="block" id="container">
+					</div>
+					<canvas width="640" height="480" id="canvas"></canvas>
+				</div>
+			</div>
+        </div>
+
+        <div id="elementProperties" class="col-md-2 no-float">
+            <div class="sidebarsInnerScroll" ng-controller="AccordionPanelsCtrl">
+                <uib-accordion close-others="false">
+                    <uib-accordion-group heading="Object properties" is-open="true">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <label for="propertiesIdentName">Name</label>
+                                <input type="text" class="form-control" id="propertiesIdentName" ng-model="widget.name">
+                            </div>
+                        </form>
+                        <br/>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Position and size</div>
+                            <div class="panel-body">
+								
+								<table class="table">
+									<tr>
+										<td><b>Horizontal</b></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>
+											<input type="text" class="form-control" id="left" ng-model="widget.position.left.value" style="width: 80px" ng-hide="widget.position.right">
+											<input type="text" class="form-control" id="left" ng-model="widget.position.right.value" style="width: 80px" ng-show="widget.position.right">
+										</td>
+										<td><div class="btn-group" role="group">
+											<label class="btn btn-default btn-md" ng-class="{active:widget.position.left}" ng-click="togglePositionAlignment('left')">
+												<i class="glyphicon glyphicon-arrow-left"></i>
+											</label>
+											<label class="btn btn-default btn-md" ng-class="{active:widget.position.right}" ng-click="togglePositionAlignment('right')">
+												<i class="glyphicon glyphicon-arrow-right"></i>
+											</label>
+										</div></td>
+									</tr>
+									<tr>
+										<td>
+											<select class="form-control" ng-model="alhorzw" ng-change="updateval(alhorzw, alhorzd)">
+												<option>None</option>
+												<option ng-repeat="w in widgets" value="{{w.id}}" ng-if="w.id != widget.id">{{w.name}}</option>
+											</select>
+										</td>
+										<td>
+											<select class="form-control" ng-model="alhorzd" ng-change="updateval(alhorzw, alhorzd)">
+												<option value="left">left</option>
+												<option value="right">right</option>
+											</select>
+										</td>
+									</tr>
+									
+									
+									<tr>
+										<td><b>Vertical</b></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>
+											<input type="text" class="form-control" id="right" ng-model="widget.position.top.value" style="width: 80px" ng-hide="widget.position.bottom">
+											<input type="text" class="form-control" id="right" ng-model="widget.position.bottom.value" style="width: 80px" ng-show="widget.position.bottom">
+
+										</td>
+										<td><div class="btn-group" role="group">
+											<label class="btn btn-default btn-md" ng-class="{active:widget.position.top}" ng-click="togglePositionAlignment('top')">
+												<i class="glyphicon glyphicon-arrow-up"></i>
+											</label>
+											<label class="btn btn-default btn-md" ng-class="{active:widget.position.bottom}" ng-click="togglePositionAlignment('bottom')">
+												<i class="glyphicon glyphicon-arrow-down"></i>
+											</label>
+										</div></td>
+									</tr>
+									<tr>
+										<td>
+											<select class="form-control" ng-model="alvertw" ng-change="updatehal(alvertw, alvertd)">
+												<option>None</option>
+												<option ng-repeat="w in widgets" value="{{w.id}}" ng-if="w.id != widget.id">{{w.name}}</option>
+											</select>
+										</td>
+										<td>
+											<select class="form-control" ng-model="alvertd" ng-change="updatehal(alvertw, alvertd)">
+												<option value="top">top</option>
+												<option value="bottom">bottom</option>
+											</select>
+										</td>
+									</tr>
+								</table>
+								
+                                <form class="form-inline text-center">
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox1" value="option1"> Draggable
+                                    </label>
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="inlineCheckbox2" value="option2"> Resizable
+                                    </label>
+                                </form>
+                            </div>
+                        </div>
+                    </uib-accordion-group>
+                    <uib-accordion-group heading="{{group.title}}" ng-repeat="group in groups" is-open="true">
+                        {{group.content}}
+                    </uib-accordion-group>
+                </uib-accordion>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row" id="footerContainer">
+    <footer>
+        <p>&copy; OpenSpire 2015-2016 - Put some useful status info here ?</p>
+    </footer>
+</div>
+
+
+<script src="js/editor.js"></script>
+<script src="js/main.js"></script>
+
+<!-- TODO : google analytics -->
+
+</body>
+</html>
