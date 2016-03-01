@@ -104,9 +104,10 @@ angular.module('openspire-editor').controller('navbarctrl', function ($scope) {
 			lua += "\n\n";
 		}
 
-		lua += "\n end";
-
 		lua += "\n myView:addChildren("+widgetNames+")";
+		lua += "\n etk.RootScreen:pushScreen(myView)";
+
+		lua += "\n end";
 
 		console.log(lua);
 	}
