@@ -12,7 +12,7 @@ var id_cnt = 0;
 var widget_callback = function () {};
 
 var c = document.getElementById("canvas");
-var ctx = c.getContext("2d");
+var context = c.getContext("2d");
 
 var pixel_scale = 1;
 
@@ -50,38 +50,11 @@ function setEditorSize(w, h, scale)
     pixel_scale = scale;
 }
 
-var rootWidget = {
-    el: container,
-    alignments: [],
-    position: {
-        top: {
-            value: 0,
-            unit: "px"
-        },
-        left: {
-            value: 0,
-            unit: "px"
-        }
-    }
-}
+var rootWidget = new Widget(null, "_RootWidget_", null, container);
 
 function addTemplate(el)
 {
-    el.widget = {
-        el: el,
-        alignments: [],
-        parent: rootWidget,
-        position: {
-            top: {
-                value: 0,
-                unit: "px"
-            },
-            left: {
-                value: 0,
-                unit: "px"
-            }
-        }
-    }
+    el.widget = new Widget(null, null, null, el, rootWidget);
 }
 
 function duplicate(el)
@@ -109,25 +82,17 @@ function addWidget(el, x, y, parent)
 
     container.appendChild(el);
 
-    el.style.webkitTransform =
-        el.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+    el.style.webkitTransform = el.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
     el.setAttribute('data-x', x);
     el.setAttribute('data-y', y);
     el.style.zIndex = 0;
 
-    var w = {
-        id: id_cnt++,
-        name: name + id_cnt,
-        type: type,
-        el: el,
-        alignments: [],
-        position: {},
-        parent: parent
-    };
+    id_cnt++;
+    var w = new Widget(id_cnt, name + id_cnt, type, el, parent);
 
     wtable[w.id] = w;
 
-    setPositionValue(w, x, y);
+    w.setPosition(x, y);
     el.widget = w;
 
     widgets.push(w);
@@ -138,33 +103,22 @@ function addWidget(el, x, y, parent)
     return w;
 }
 
-function moveWidget(widget, dx, dy)
+function moveWidgetWithDeps(widget, dx, dy)
 {
-    var el = widget.el;
-    var b = getElementBoundaries(el);
-    var x = b.x + dx;
-    var y = b.y + dy;
-
-    el.style.webkitTransform =
-        el.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-    el.setAttribute('data-x', x);
-    el.setAttribute('data-y', y);
-
-    setPositionValue(widget, x, y);
+    widget.moveDelta(dx, dy);
 
     var my_dependencies = dependencies[widget.id];
-
     if (my_dependencies)
     {
         for (var i = 0; i < my_dependencies.length; i++)
         {
             var dep = my_dependencies[i];
-            updateWidgetAlignment(dep, widget, dx, dy);
+            updateWidgetAlignmentWithDeps(dep, widget, dx, dy);
         }
     }
 }
 
-function updateWidgetAlignment(source, target, dx, dy)
+function updateWidgetAlignmentWithDeps(source, target, dx, dy)
 {
     var b = getElementBoundaries(source.el);
     var alignments = source.alignments;
@@ -177,69 +131,14 @@ function updateWidgetAlignment(source, target, dx, dy)
             var side = alignment.side;
             if (side == 'left' || side == 'right')
             {
-                moveWidget(source, dx, 0);
+                moveWidgetWithDeps(source, dx, 0);
             } else if (side == 'top' || side == 'bottom')
             {
-                moveWidget(source, 0, dy);
+                moveWidgetWithDeps(source, 0, dy);
             }
         }
     }
 }
-
-function setPositionValue(widget, x, y)
-{
-    var el = widget.el;
-    var parent = widget.parent;
-    var b = getElementBoundaries(el);
-    var pb = getElementBoundaries(parent.el);
-    var rel = getWidgetAlignment(widget);
-
-    var position = widget.position;
-    var p_x_val = x / pb.w * 100;
-    var p_y_val = y / pb.h * 100;
-
-    var vert = position.bottom || position.top;
-    if (!vert)
-    {
-        vert = position.top = {
-            value: 0,
-            unit: "px"
-        };
-    }
-    vert.value = (vert.unit == "%") ? p_y_val : y;
-
-
-    var horz = position.right || position.left;
-    if (!horz)
-    {
-        horz = position.left = {
-            value: 0,
-            unit: "px"
-        };
-    }
-    horz.value = (horz.unit == "%") ? p_x_val : x;
-
-    if (position.right)
-    {
-        horz.value = (horz.unit == "%" ? 100 : pb.w) - horz.value - b.w;
-    }
-
-    if (position.bottom)
-    {
-        vert.value = (vert.unit == "%" ? 100 : pb.h) - vert.value - b.h;
-    }
-
-    if (rel.x)
-    {
-        horz.value -= position.right ? pb.w - rel.x : rel.x
-    }
-
-    if (rel.y)
-    {
-        vert.value -= position.bottom ? pb.h - rel.y : rel.y
-    }
-}
-
 
 function repositionWidgets()
 {
@@ -348,8 +247,7 @@ function repositionWidgets()
         var y = widget.moveTo.y;
         var el = widget.el;
 
-        el.style.webkitTransform =
-            el.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        el.style.webkitTransform = el.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
         el.setAttribute('data-x', x);
         el.setAttribute('data-y', y);
     }
@@ -390,66 +288,14 @@ function addAlignment(source, target, side)
     }
 }
 
-
-function getAlignment(alignment)
-{
-    var res = {}
-
-    if (alignment)
-    {
-
-        var b = getElementBoundaries(alignment.target.el);
-
-        switch (alignment.side)
-        {
-            case 'left':
-                res.x = b.x;
-                break;
-            case 'right':
-                res.x = b.x + b.w;
-                break;
-            case 'top':
-                res.y = b.y;
-                break;
-            case 'bottom':
-                res.y = b.y + b.h;
-                break;
-        }
-    }
-
-    return res;
-}
-
-function getWidgetAlignment(widget)
-{
-    var alignments = widget.alignments;
-    var rel = {}
-
-    for (var i = 0; i < alignments.length; i++)
-    {
-        var alignment = alignments[i];
-        var r = getAlignment(alignment);
-        rel.x = r.x || rel.x;
-        rel.y = r.y || rel.y;
-    }
-
-    return rel;
-}
-
 function getElementBoundaries(el)
 {
     var $el = $(el);
-
-    var x = (parseFloat(el.getAttribute('data-x')) || 0);
-    var y = (parseFloat(el.getAttribute('data-y')) || 0);
-    var w = (parseFloat($el.outerWidth()) || 0);
-    var h = (parseFloat($el.outerHeight()) || 0);
-
     return {
-        x: x,
-        y: y,
-        w: w,
-        h: h
+        x: (parseFloat(el.getAttribute('data-x')) || 0),
+        y: (parseFloat(el.getAttribute('data-y')) || 0),
+        w: (parseFloat($el.outerWidth()) || 0),
+        h: (parseFloat($el.outerHeight()) || 0)
     };
 }
 
@@ -466,136 +312,6 @@ function canvas_arrow(context, fromx, fromy, tox, toy)
     context.stroke();
 }
 
-function drawWidgetBoundaries(widget, w, h)
-{
-    var el = widget.el;
-    var pos = widget.position;
-    var b = getElementBoundaries(el);
-    var rel = getWidgetAlignment(widget);
-
-
-    ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
-
-    ctx.fillRect(b.x, 0, 2, h);
-    ctx.fillRect(b.x + b.w, 0, 2, h);
-    ctx.fillRect(0, b.y, w, 2);
-    ctx.fillRect(0, b.y + b.h, w, 2);
-
-    ctx.strokeStyle = "rgba(0, 0, 255, 0.2)";
-
-    var left = b.x;
-    var right = left + b.w;
-    var top = b.y;
-    var bottom = top + b.h;
-    var middle = top + b.h / 2;
-    var center = left + b.w / 2;
-
-    var arrow;
-    var to;
-
-    to = {
-        x: rel.x || center,
-        y: middle
-    };
-
-    if (pos.left && rel.x)
-    {
-        arrow = {
-            from: {
-                x: left,
-                y: middle
-            },
-            to: to
-        };
-    } else if (pos.right && rel.x)
-    {
-        arrow = {
-            from: {
-                x: right,
-                y: middle
-            },
-            to: to
-        };
-    } else if (pos.left)
-    {
-        arrow = {
-            from: {
-                x: left,
-                y: middle
-            },
-            to: {
-                x: 0,
-                y: middle
-            }
-        };
-    } else if (pos.right)
-    {
-        arrow = {
-            from: {
-                x: right,
-                y: middle
-            },
-            to: {
-                x: w,
-                y: middle
-            }
-        };
-    }
-
-    canvas_arrow(ctx, arrow.from.x, arrow.from.y, arrow.to.x, arrow.to.y);
-
-    to = {
-        x: center,
-        y: rel.y || middle
-    };
-
-    if (pos.top && rel.y)
-    {
-        arrow = {
-            from: {
-                x: center,
-                y: top
-            },
-            to: to
-        };
-    } else if (pos.bottom && rel.y)
-    {
-        arrow = {
-            from: {
-                x: center,
-                y: bottom
-            },
-            to: to
-        };
-    } else if (pos.top)
-    {
-        arrow = {
-            from: {
-                x: center,
-                y: top
-            },
-            to: {
-                x: center,
-                y: 0
-            }
-        };
-    } else if (pos.bottom)
-    {
-        arrow = {
-            from: {
-                x: center,
-                y: bottom
-            },
-            to: {
-                x: center,
-                y: h
-            }
-        };
-    }
-
-    canvas_arrow(ctx, arrow.from.x, arrow.from.y, arrow.to.x, arrow.to.y);
-}
-
 function drawElementsBoundaries()
 {
     var b = getElementBoundaries(container);
@@ -603,16 +319,13 @@ function drawElementsBoundaries()
     var width = b.w;//c.width;
     var height = b.h;//c.height;
 
-    ctx.clearRect(0, 0, width, height);
+    context.clearRect(0, 0, width, height);
 
     for (var i = 0; i < widgets.length; i++)
     {
-        drawWidgetBoundaries(widgets[i], width, height);
+        widgets[i].drawWidgetBoundaries(context, width, height);
     }
-
-
 }
-
 
 drawElementsBoundaries();
 
@@ -692,7 +405,6 @@ interact(container).dropzone({
 
         drawElementsBoundaries();
     }
-
 });
 
 function dragMoveListener(event)
@@ -705,8 +417,7 @@ function dragMoveListener(event)
         addTemplate(target);
     }
 
-    var widget = target.widget;
-    moveWidget(widget, event.dx / pixel_scale, event.dy / pixel_scale);
+    moveWidgetWithDeps(target.widget, event.dx / pixel_scale, event.dy / pixel_scale);
 
     drawElementsBoundaries();
 }
