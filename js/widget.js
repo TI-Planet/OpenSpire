@@ -23,7 +23,7 @@ class Widget {
     }
 
     generateLuaDependencies() {
-        let alignments = this.alignments.map(a=>`{ref=${a.target.name}, side=Position.Sides.${a.side}}`).join();
+        let alignments = this.alignments.filter(a=>a).map(a=>`{ref=${a.target.name}, side=Position.Sides.${a.side}}`).join();
         let positions = ['top', 'bottom', 'right', 'left'].filter(p => this.position[p]).map(pos => `${pos}='${getCleanETKPos(this.position[pos])}'`).join();
 
         let str = "";
