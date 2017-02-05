@@ -16,11 +16,11 @@
 	<script src="bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="bower_components/interact/dist/interact.js"></script>
 
-    <script src="js/utils.js"></script>
-
     <script src="https://code.angularjs.org/1.6.1/angular.min.js"></script>
     <script src="https://code.angularjs.org/1.6.1/angular-animate.min.js"></script>
     <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.1.0.js"></script>
+
+    <script src="js/utils.js"></script>
 
     <script id="uib/template/accordion/accordion-group.html" type="text/ng-template">
         <div class="panel" ng-class="panelClass || 'panel-default'">
@@ -63,7 +63,7 @@
             <li><a href="#"><span class="glyphicon glyphicon-open-file" aria-hidden="true"></span> Open</a></li>
             <li><a href="#"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a></li>
             <li><a href="#" ng-click="getLua()"><span class="glyphicon glyphicon-align-left" aria-hidden="true"></span> Get .lua</a></li>
-            <li><a href="#"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Get .tns</a></li>
+            <li><a href="#" ng-click="getTNS()"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Get .tns</a></li>
             <li><a href="#"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Settings</a></li>
         </ul>
     </div>
@@ -297,6 +297,8 @@
 <script src="js/widget.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/main.js"></script>
+
+<script src="js/vendor/FileSaver.js"></script>
 
 <!-- TODO : google analytics -->
 

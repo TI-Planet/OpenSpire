@@ -12,7 +12,7 @@ angular.module('openspire-editor').controller('navbarctrl', $scope => {
 			local Button = etk.Widgets.Button
 			local myView = etk.View()
 			local ${widgetNames}
-		`
+		`;
 
         lua += widgets.map(w=>w.generateLuaDefinition()).join('\n');
         lua += "\n";
@@ -21,12 +21,23 @@ angular.module('openspire-editor').controller('navbarctrl', $scope => {
         lua += `    
 			myView:addChildren(${widgetNames})
 			etk.RootScreen:pushScreen(myView)
-			end`
+			end`;
 
         console.log(lua);
+
+        return lua;
+    };
+
+    $scope.getTNS = () =>
+    {
+        const cb = () => { makeAndDownloadTNS($scope.getLua(), "myscript.tns"); };
+        if (typeof makeAndDownloadTNS === "undefined") {
+            initLuna(cb);
+        } else {
+            cb();
+        }
     }
 });
-
 
 angular.module('openspire-editor').controller('AccordionPanelsCtrl', $scope => {
     $scope.alhorzd = 'left';
