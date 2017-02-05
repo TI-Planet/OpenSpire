@@ -24,6 +24,7 @@ class Widget {
 
     generateLuaDependencies() {
         let alignments = "";
+		console.log(this.alignments, this.alignments.length);
         for (let j = 0; j < this.alignments.length; j++) {
             alignments += `{ref=${this.alignments[j].target.name}, side=Position.Sides.${this.alignments[j].side}}, `;
         }

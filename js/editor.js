@@ -257,30 +257,24 @@ function getSideIndex(side)
 
 function addAlignment(source, target, side)
 {
-    const s_i = widgets.indexOf(source);
-    const t_i = widgets.indexOf(target);
-
-    if (s_i != -1 && t_i != -1)
+    if (widgets.includes(source) && widgets.includes(target) && typeof side != "undefined")
     {
-        const s_widget = widgets[s_i];
-        const t_widget = widgets[t_i];
-
-        s_widget.alignments[getSideIndex(side)] = {
-            target: t_widget,
-            side
+		console.log("Add alignment", source, target, side);
+		
+        source.alignments[getSideIndex(side)] = {
+            target: target,
+            side: side
         };
 
-        if (dependencies[t_widget.id])
+        if (dependencies[target.id])
         {
-            if (!dependencies[t_widget.id].includes(s_widget))
-            {
-                dependencies[t_widget.id].push(s_widget);
-            }
+			if (!dependencies[target.id].includes(source))
+				dependencies[target.id].push(source);
         }
         else
         {
-            dependencies[t_widget.id] = [s_widget];
-            console.log('replaceing dep');
+            dependencies[target.id] = [source];
+            console.log('First dependency added');
         }
     }
 }

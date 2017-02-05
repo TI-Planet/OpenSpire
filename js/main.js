@@ -4,39 +4,24 @@ angular.module('openspire-editor').controller('navbarctrl', $scope => {
     $scope.getLua = () => {
         let i;
 
-		/*
-        let widgetNames = "";
-        for (i = 0; i < widgets.length; i++)
-        {
-            widgetNames += widgets[i].name;
-            if (i < widgets.length - 1)
-            {
-                widgetNames += ", ";
-            }
-        }*/
-        
         const widgetNames = widgets.map(i=>i.name).join();
 
         let lua = `do
-local Input = etk.Widgets.Input
-local Label = etk.Widgets.Label
-local Button = etk.Widgets.Button
-local myView = etk.View()
-local ${widgetNames}
-`
+			local Input = etk.Widgets.Input
+			local Label = etk.Widgets.Label
+			local Button = etk.Widgets.Button
+			local myView = etk.View()
+			local ${widgetNames}
+		`
 
-        for (i = 0; i < widgets.length; i++) {
-            lua += `${widgets[i].generateLuaDefinition()}\n`;
-        }
+        lua += widgets.map(w=>w.generateLuaDefinition()).join('\n');
         lua += "\n";
-        for (i = 0; i < widgets.length; i++) {
-            lua += `${widgets[i].generateLuaDependencies()}\n`;
-        }
+        lua += widgets.map(w=>w.generateLuaDependencies()).join('\n');
 
         lua += `    
-myView:addChildren(${widgetNames})
-etk.RootScreen:pushScreen(myView)
-end`
+			myView:addChildren(${widgetNames})
+			etk.RootScreen:pushScreen(myView)
+			end`
 
         console.log(lua);
     }
