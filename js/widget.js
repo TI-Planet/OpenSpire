@@ -23,17 +23,8 @@ class Widget {
     }
 
     generateLuaDependencies() {
-        let alignments = "";
-		console.log(this.alignments, this.alignments.length);
-        for (let j = 0; j < this.alignments.length; j++) {
-            alignments += `{ref=${this.alignments[j].target.name}, side=Position.Sides.${this.alignments[j].side}}, `;
-        }
-
-        const thispos = this.position;
-        let positions = "";
-        ['top', 'bottom', 'right', 'left'].forEach(pos => {
-            positions += thispos[pos] ? (`${pos}='${thispos[pos].value}${thispos[pos].unit ? thispos[pos].unit : ""}', `) : ""
-        });
+        let alignments = this.alignments.map(a=>`{ref=${a.target.name}, side=Position.Sides.${a.side}}`).join();
+        let positions = ['top', 'bottom', 'right', 'left'].filter(p => this.position[p]).map(pos => `${pos}='${getCleanETKPos(this.position[pos])}'`).join();
 
         let str = "";
         if (positions.length) {
@@ -284,3 +275,6 @@ function getAlignment(alignment)
     return res;
 }
 
+function getCleanETKPos(pos) {
+	return pos.value + (pos.unit ? pos.unit : "");
+}
