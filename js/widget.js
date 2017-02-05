@@ -18,7 +18,11 @@ class Widget {
             };
     }
 
-    generateLua() {
+    generateLuaDefinition() {
+        return `\tlocal ${this.name} = ${this.type.capitalizeFirstLetter()}()`;
+    }
+
+    generateLuaDependencies() {
         let alignments = "";
         for (let j = 0; j < this.alignments.length; j++) {
             alignments += `{ref=${this.alignments[j].target.name}, side=Position.Sides.${this.alignments[j].side}}, `;
@@ -30,7 +34,15 @@ class Widget {
             positions += thispos[pos] ? (`${pos}='${thispos[pos].value}${thispos[pos].unit ? thispos[pos].unit : ""}', `) : ""
         });
 
-        return `\tlocal ${this.name} = ${this.type.capitalizeFirstLetter()} { \n\t\tposition = Position { ${positions} },\n\t\talignment = { ${alignments} }\n\t}`;
+        let str = "";
+        if (positions.length) {
+            str += `\t${this.name}.position = Position { ${positions} }\n`;
+        }
+        if (alignments.length) {
+            str += `\t${this.name}.alignment = { ${alignments} }`;
+        }
+
+        return str;
     }
 
     getWidgetAlignment() {
