@@ -218,13 +218,13 @@
 									</tr>
 									<tr>
 										<td>
-											<select class="form-control" ng-model="alhorzw" ng-change="updateval(alhorzw, alhorzd)">
+											<select class="form-control" ng-model="widget.alhorzw" ng-change="updateval(widget.alhorzw, widget.alhorzd)">
 												<option>None</option>
 												<option ng-repeat="w in widgets" value="{{w.id}}" ng-if="w.id != widget.id">{{w.name}}</option>
 											</select>
 										</td>
 										<td>
-											<select class="form-control" ng-model="alhorzd" ng-change="updateval(alhorzw, alhorzd)">
+											<select class="form-control" ng-model="widget.alhorzd" ng-change="updateval(widget.alhorzw, widget.alhorzd)">
 												<option value="left">left</option>
 												<option value="right">right</option>
 											</select>
@@ -253,13 +253,13 @@
 									</tr>
 									<tr>
 										<td>
-											<select class="form-control" ng-model="alvertw" ng-change="updatehal(alvertw, alvertd)">
+											<select class="form-control" ng-model="widget.alvertw" ng-change="updatehal(widget.alvertw, widget.alvertd)">
 												<option>None</option>
 												<option ng-repeat="w in widgets" value="{{w.id}}" ng-if="w.id != widget.id">{{w.name}}</option>
 											</select>
 										</td>
 										<td>
-											<select class="form-control" ng-model="alvertd" ng-change="updatehal(alvertw, alvertd)">
+											<select class="form-control" ng-model="widget.alvertd" ng-change="updatehal(widget.alvertw, widget.alvertd)">
 												<option value="top">top</option>
 												<option value="bottom">bottom</option>
 											</select>

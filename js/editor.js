@@ -53,6 +53,8 @@ const rootWidget = new Widget(null, "_RootWidget_", null, container);
 function addTemplate(el)
 {
     el.widget = new Widget(null, null, null, el, rootWidget);
+    el.alhorzd = 'left';
+    el.alvertd = 'top';
 }
 
 function duplicate(el)
