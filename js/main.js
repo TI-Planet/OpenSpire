@@ -1,14 +1,12 @@
 angular.module('openspire-editor', ['ngAnimate', 'ui.bootstrap']);
 
-angular.module('openspire-editor').controller('navbarctrl', function ($scope)
-{
-    $scope.getLua = function ()
-    {
-        var i;
+angular.module('openspire-editor').controller('navbarctrl', $scope => {
+    $scope.getLua = () => {
+        let i;
 
         console.log(widgets);
 
-        var widgetNames = "";
+        let widgetNames = "";
         for (i = 0; i < widgets.length; i++)
         {
             widgetNames += widgets[i].name;
@@ -18,19 +16,19 @@ angular.module('openspire-editor').controller('navbarctrl', function ($scope)
             }
         }
 
-        var lua = "do\n";
+        let lua = "do\n";
         lua += "    local Input = etk.Widgets.Input\n";
         lua += "    local Label = etk.Widgets.Label\n";
         lua += "    local Button = etk.Widgets.Button\n";
         lua += "    local myView = etk.View()\n";
-        lua += "    local " + widgetNames + "\n\n";
+        lua += `    local ${widgetNames}\n\n`;
 
         for (i = 0; i < widgets.length; i++)
         {
-            lua += widgets[i].generateLua() + "\n\n";
+            lua += `${widgets[i].generateLua()}\n\n`;
         }
 
-        lua += "    myView:addChildren(" + widgetNames + ")\n";
+        lua += `    myView:addChildren(${widgetNames})\n`;
         lua += "    etk.RootScreen:pushScreen(myView)\n";
         lua += "end\n";
 
@@ -39,19 +37,16 @@ angular.module('openspire-editor').controller('navbarctrl', function ($scope)
 });
 
 
-angular.module('openspire-editor').controller('AccordionPanelsCtrl', function ($scope)
-{
+angular.module('openspire-editor').controller('AccordionPanelsCtrl', $scope => {
     $scope.alhorzd = 'left';
     $scope.alvertd = 'top';
 
-    widget_callback = function (widgets)
-    {
+    widget_callback = widgets => {
         $scope.widgets = widgets;
         $scope.$digest();
     };
 
-    selectedWidget.watch('widget', function (prop, oldval, newval)
-    {
+    selectedWidget.watch('widget', (prop, oldval, newval) => {
         $scope.widget = newval;
         $scope.$digest();
     });
@@ -63,10 +58,9 @@ angular.module('openspire-editor').controller('AccordionPanelsCtrl', function ($
         return {value: (p.unit != '%' ? rel : 100) - p.value}
     }
 
-    $scope.updateval = function (id, side)
-    {
-        var widget = $scope.widget;
-        var alignments = widget.alignments;
+    $scope.updateval = (id, side) => {
+        const widget = $scope.widget;
+        const alignments = widget.alignments;
 
         addAlignment(widget, wtable[parseInt(id)], side);
         console.log(widget.alignments);
@@ -75,10 +69,9 @@ angular.module('openspire-editor').controller('AccordionPanelsCtrl', function ($
         drawElementsBoundaries();
     };
 
-    $scope.updatehal = function (id, side)
-    {
-        var widget = $scope.widget;
-        var alignments = widget.alignments;
+    $scope.updatehal = (id, side) => {
+        const widget = $scope.widget;
+        const alignments = widget.alignments;
 
         addAlignment(widget, wtable[parseInt(id)], side);
         console.log(widget.alignments);
@@ -88,14 +81,13 @@ angular.module('openspire-editor').controller('AccordionPanelsCtrl', function ($
     };
 
 
-    $scope.togglePositionAlignment = function (al)
-    {
-        var parent = $scope.widget.parent;
-        var el = $scope.widget.el;
-        var position = $scope.widget.position;
+    $scope.togglePositionAlignment = al => {
+        const parent = $scope.widget.parent;
+        const el = $scope.widget.el;
+        const position = $scope.widget.position;
 
-        var bp = getElementBoundaries(parent.el);
-        var b = getElementBoundaries(el);
+        const bp = getElementBoundaries(parent.el);
+        const b = getElementBoundaries(el);
 
         if (al == 'top' && !position.top)
         {
@@ -134,11 +126,9 @@ angular.module('openspire-editor').controller('AccordionPanelsCtrl', function ($
     ];
 });
 
-angular.module('openspire-editor').controller('DeviceSelectorButtonsCtrl', function ($scope)
-{
+angular.module('openspire-editor').controller('DeviceSelectorButtonsCtrl', $scope => {
     $scope.radioModel = 'iPad';
-    $scope.toggleMode = function ()
-    {
+    $scope.toggleMode = () => {
         if ($scope.radioModel == 'Handheld')
         {
             setEditorSize(320, 240, 1.5);
@@ -162,3 +152,4 @@ angular.module('openspire-editor').controller('DeviceSelectorButtonsCtrl', funct
         }
     }
 });
+
