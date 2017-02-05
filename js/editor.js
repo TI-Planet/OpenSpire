@@ -389,8 +389,9 @@ interact(container).dropzone({
         addWidget(target, x, y, rootWidget);
 
         $target.removeClass('pre-elem');
-
+        
         drawElementsBoundaries();
+        selectWidget(target);
     }
 });
 
