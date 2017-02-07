@@ -19,19 +19,23 @@ class Widget {
     }
 
     generateLuaDefinition() {
-        return `    local ${this.name} = ${this.type.capitalizeFirstLetter()}()`;
+        return `    local ${this.name} = ${this.type.capitalizeFirstLetter()}{}`;
     }
 
     generateLuaDependencies() {
-        let alignments = this.alignments.filter(a=>a).map(a=>`{ref=${a.target.name}, side=Position.Sides.${a.side}}`).join();
+        let alignments = this.alignments.filter(a=>a).map(a=>`{ref=${a.target.name}, side=Position.Sides.${a.side.capitalizeFirstLetter()}}`).join();
         let positions = ['top', 'bottom', 'right', 'left'].filter(p => this.position[p]).map(pos => `${pos}='${getCleanETKPos(this.position[pos])}'`).join();
 
         let str = "";
-        if (positions.length) {
-            str += `    ${this.name}.position = Position { ${positions} }\n`;
-        }
-        if (alignments.length) {
-            str += `    ${this.name}.alignment = { ${alignments} }`;
+
+        if (positions.length)
+        {
+            str += `    ${this.name}.position = Position { ${positions} `;
+            if (alignments.length)
+            {
+                str += `, alignment = { ${alignments} }`;
+            }
+            str += " }";
         }
 
         return str;
@@ -276,5 +280,5 @@ function getAlignment(alignment)
 }
 
 function getCleanETKPos(pos) {
-	return pos.value + (pos.unit ? pos.unit : "");
+	return Math.round(pos.value) + (pos.unit ? pos.unit : "");
 }
