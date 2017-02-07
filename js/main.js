@@ -7,21 +7,26 @@ angular.module('openspire-editor').controller('navbarctrl', $scope => {
         const widgetNames = widgets.map(i=>i.name).join();
 
         let lua = `do
-			local Input = etk.Widgets.Input
-			local Label = etk.Widgets.Label
-			local Button = etk.Widgets.Button
-			local myView = etk.View()
-			local ${widgetNames}
-		`;
+    local Input  = etk.Widgets.Input
+    local Label  = etk.Widgets.Label
+    local Button = etk.Widgets.Button
 
-        lua += widgets.map(w=>w.generateLuaDefinition()).join('\n');
-        lua += "\n";
-        lua += widgets.map(w=>w.generateLuaDependencies()).join('\n');
+    local myView = etk.View()
 
-        lua += `    
-			myView:addChildren(${widgetNames})
-			etk.RootScreen:pushScreen(myView)
-			end`;
+`;
+        if (widgets.length)
+        {
+            lua += `\n    local ${widgetNames}\n`;
+            lua += widgets.map(w => w.generateLuaDefinition()).join('\n');
+            lua += "\n";
+            lua += widgets.map(w => w.generateLuaDependencies()).join('\n');
+            lua += "\n";
+            lua += `
+    myView:addChildren(${widgetNames})
+`;
+        }
+        lua += "\n    etk.RootScreen:pushScreen(myView)\nend";
+
 
         console.log(lua);
 
@@ -30,12 +35,7 @@ angular.module('openspire-editor').controller('navbarctrl', $scope => {
 
     $scope.getTNS = () =>
     {
-        const cb = () => { makeAndDownloadTNS($scope.getLua(), "myscript.tns"); };
-        if (typeof makeAndDownloadTNS === "undefined") {
-            initLuna(cb);
-        } else {
-            cb();
-        }
+        makeAndDownloadTNS($scope.getLua(true));
     }
 });
 
@@ -62,22 +62,14 @@ angular.module('openspire-editor').controller('AccordionPanelsCtrl', $scope => {
 
     $scope.updateval = (id, side) => {
         const widget = $scope.widget;
-        const alignments = widget.alignments;
-
         addAlignment(widget, wtable[parseInt(id)], side);
-        console.log(widget.alignments);
-
         moveWidgetWithDeps(widget, 0, 0);
         drawElementsBoundaries();
     };
 
     $scope.updatehal = (id, side) => {
         const widget = $scope.widget;
-        const alignments = widget.alignments;
-
         addAlignment(widget, wtable[parseInt(id)], side);
-        console.log(widget.alignments);
-
         moveWidgetWithDeps(widget, 0, 0);
         drawElementsBoundaries();
     };

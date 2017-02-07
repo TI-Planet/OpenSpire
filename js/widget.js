@@ -19,7 +19,7 @@ class Widget {
     }
 
     generateLuaDefinition() {
-        return `\tlocal ${this.name} = ${this.type.capitalizeFirstLetter()}()`;
+        return `    local ${this.name} = ${this.type.capitalizeFirstLetter()}()`;
     }
 
     generateLuaDependencies() {
@@ -28,10 +28,10 @@ class Widget {
 
         let str = "";
         if (positions.length) {
-            str += `\t${this.name}.position = Position { ${positions} }\n`;
+            str += `    ${this.name}.position = Position { ${positions} }\n`;
         }
         if (alignments.length) {
-            str += `\t${this.name}.alignment = { ${alignments} }`;
+            str += `    ${this.name}.alignment = { ${alignments} }`;
         }
 
         return str;

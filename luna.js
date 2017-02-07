@@ -268,27 +268,26 @@ Module["preRun"] = (function() {
    return Module["_main"](argc, argv, 0);
   }([ inputFileName, tnsFileName ]);
  });
- makeAndDownloadTNS = (function(luaScript, filename) {
-  const tnsName = filename.replace(/\.(lua|xml)$/, ".tns");
-  FS.writeFile(filename, luaScript, {
-   encoding: "utf8"
-  });
+ makeAndDownloadTNS = (function(luaScript) {
+  const luaFileName = "myScript.lua";
+  const tnsFileName = "myScript.tns";
+  FS.writeFile(luaFileName, luaScript);
   try {
-   FS.unlink(tnsName);
+   FS.unlink(tnsFileName);
   } catch (e) {}
-  const retVal = callLuna(filename, tnsName);
+  const retVal = callLuna(luaFileName, tnsFileName);
   if (retVal !== 0) {
    alert("Oops, something went wrong generating the .tns file (see console)");
    return;
   }
-  const file = FS.readFile(tnsName, {
+  const file = FS.readFile(tnsFileName, {
    encoding: "binary"
   });
   if (file) {
    const blob = new Blob([ file ], {
     type: "application/octet-stream"
    });
-   window["saveAs"](blob, tnsName);
+   window["saveAs"](blob, tnsFileName);
   } else {
    alert("Oops, something went wrong retrieving the generated .tns file :(");
   }
