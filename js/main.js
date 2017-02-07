@@ -1,9 +1,7 @@
 angular.module('openspire-editor', ['ngAnimate', 'ui.bootstrap']);
 
 angular.module('openspire-editor').controller('navbarctrl', $scope => {
-    $scope.getLua = () => {
-        let i;
-
+    $scope.getLua = (returnOnly) => {
         const widgetNames = widgets.map(i=>i.name).join();
 
         let lua = `do
@@ -27,8 +25,16 @@ angular.module('openspire-editor').controller('navbarctrl', $scope => {
         }
         lua += "\n    etk.RootScreen:pushScreen(myView)\nend";
 
+        if (!returnOnly)
+        {
+            const modal = $("#luaCodeModal");
+            const luaForHTML = $('<div/>').text(lua).html();
+            modal.find("div.modal-body").html(`<pre style='max-height:300px'><code>${luaForHTML}</code></pre>`);
+            modal.modal();
+        }
 
-        console.log(lua);
+        // todo : prepend by ETK full code.
+        // lua = etkCode + lua;
 
         return lua;
     };
