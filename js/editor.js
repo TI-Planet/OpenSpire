@@ -16,7 +16,7 @@ const context = c.getContext("2d");
 
 let pixel_scale = 1;
 
-const container = document.getElementById('container');
+var container = document.getElementById('container');
 container.setAttribute('data-x', 0);
 container.setAttribute('data-y', 0);
 
