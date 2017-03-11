@@ -67,19 +67,21 @@ String.prototype.capitalizeFirstLetter = function ()
 
 /* Load Luna */
 window.Module = {};
-const loadlunajs = () => {
-    const script = document.createElement('script');
-    script.src = "luna.js";
-    document.body.appendChild(script);
-};
-if (typeof WebAssembly !== "undefined")
-{
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'luna.wasm', true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = () => { Module.wasmBinary = xhr.response; };
-    xhr.onloadend = loadlunajs;
-    xhr.send(null);
-} else {
-    loadlunajs();
-}
+setTimeout(() => {
+    const loadlunajs = () => {
+        const script = document.createElement('script');
+        script.src = "luna.js";
+        document.body.appendChild(script);
+    };
+    if (typeof WebAssembly !== "undefined")
+    {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'luna.wasm', true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = () => { Module.wasmBinary = xhr.response; };
+        xhr.onloadend = loadlunajs;
+        xhr.send(null);
+    } else {
+        loadlunajs();
+    }
+}, 200);
