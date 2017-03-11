@@ -36,7 +36,7 @@ angular.module('openspire-editor').controller('navbarctrl', $scope => {
         // todo : prepend by ETK full code.
         // lua = etkCode + lua;
 
-        return lua;
+        return etk_lua_code + lua;
     };
 
     $scope.getTNS = () =>
